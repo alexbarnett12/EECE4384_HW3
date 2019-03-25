@@ -17,7 +17,11 @@ objectPoints[:, :2] = np.mgrid[0:rows,0:cols].T.reshape(-1, 2)
 objectPointsArray = []  # 3d point in real world space
 imgPointsArray = []  # 2d points in image plane
 
-images = glob.glob('*.jpg')
+# Test
+# img = cv2.imread('./calibPictures/camera_calib2.jpg')
+# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+images = glob.glob('./calibPictures/camera_calib[1-25].jpg')
 
 for fname in images:
     # Load the image and convert it to grayscale
@@ -53,7 +57,7 @@ for i in range(len(objectPointsArray)):
 print("Total error: ", error / len(objectPointsArray))
 
 # Load one of the test images
-img = cv2.imread('../data/Picture_13.jpg')
+img = cv2.imread('../calibPictures/camera_calib1.jpg')
 h, w = img.shape[:2]
 
 # Obtain the new camera matrix and undistort the image
