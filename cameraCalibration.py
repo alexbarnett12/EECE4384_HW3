@@ -18,14 +18,16 @@ objectPointsArray = []  # 3d point in real world space
 imgPointsArray = []  # 2d points in image plane
 
 # Test
-# img = cv2.imread('./calibPictures/camera_calib2.jpg')
+# img = cv2.imread('./calibPictures/camera_calib_02.jpg')
 # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-images = glob.glob('./calibPictures/camera_calib[1-25].jpg')
+# images = glob.glob('./calibPictures/*[0-2]*.jpg')
+images = glob.glob('./calibPictures/Stonehenge[1].jpg')
+
 
 for fname in images:
     # Load the image and convert it to grayscale
-    img = cv2.imread(fname)
+    img = cv2.imread('./calibPictures/camera_calib_25.jpg')
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Find the chess board corners
@@ -57,7 +59,7 @@ for i in range(len(objectPointsArray)):
 print("Total error: ", error / len(objectPointsArray))
 
 # Load one of the test images
-img = cv2.imread('../calibPictures/camera_calib1.jpg')
+img = cv2.imread('../calibPictures/camera_calib_01.jpg')
 h, w = img.shape[:2]
 
 # Obtain the new camera matrix and undistort the image
