@@ -3,8 +3,8 @@ import cv2
 import glob
 
 # Define the chessboard rows and columns
-rows = 8
-cols = 6
+rows = 9
+cols = 7
 
 # Set the termination criteria for the corner sub-pixel algorithm
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -17,17 +17,11 @@ objectPoints[:, :2] = np.mgrid[0:rows,0:cols].T.reshape(-1, 2)
 objectPointsArray = []  # 3d point in real world space
 imgPointsArray = []  # 2d points in image plane
 
-# Test
-# img = cv2.imread('./calibPictures/camera_calib_02.jpg')
-# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-# images = glob.glob('./calibPictures/*[0-2]*.jpg')
-images = glob.glob('./calibPictures/Stonehenge[1].jpg')
-
+images = glob.glob('./calibPictures/*[0-9]*.png')
 
 for fname in images:
     # Load the image and convert it to grayscale
-    img = cv2.imread('./calibPictures/camera_calib_25.jpg')
+    img = cv2.imread(fname)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Find the chess board corners
@@ -43,13 +37,13 @@ for fname in images:
         imgPointsArray.append(corners)
 
         # Draw the corners on the image
-        cv2.drawChessboardCorners(img, (rows, cols), corners, ret)
-        cv2.imshow('img', img)
-        cv2.waitKey(0)
+        # cv2.drawChessboardCorners(img, (rows, cols), corners, ret)
+        # cv2.imshow('img', img)
+        # cv2.waitKey(0)
 
 # Calibrate the camera and save the results
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objectPointsArray, imgPointsArray, gray.shape[::-1], None, None)
-np.savez('../data/calib.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
+np.savez('./data/calib.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
 
 # Print the camera calibration error
 error = 0
@@ -59,7 +53,7 @@ for i in range(len(objectPointsArray)):
 print("Total error: ", error / len(objectPointsArray))
 
 # Load one of the test images
-img = cv2.imread('../calibPictures/camera_calib_01.jpg')
+img = cv2.imread('./calibPictures/opencv_frame_0.png')
 h, w = img.shape[:2]
 
 # Obtain the new camera matrix and undistort the image
