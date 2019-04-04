@@ -101,10 +101,6 @@ img_right_undistorted = cv2.undistort(img_right, cameraMatrix, distCoeffs)
 
 newK, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, (C, R), 0, (C, R))
 
-# Undistort the image points
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-6)
-
-# QUESTION: how do I retrieve matched keypoints? I have matches variable and & keypoints from ORB
 # N x 1 x 2
 matched_kps_left = [kp_left[mat.queryIdx].pt for mat in matches]
 matched_kps_right = [kp_right[mat.trainIdx].pt for mat in matches]
@@ -114,6 +110,9 @@ matched_kps_right = np.array(matched_kps_right)
 matched_kps_left = matched_kps_left[:, np.newaxis, :]
 matched_kps_right = matched_kps_right[:, np.newaxis, :]
 
+criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-6)
+
+# Undistort the image points
 pts_left_undistorted = cv2.undistortPointsIter(matched_kps_left, cameraMatrix, distCoeffs,
                                                R=None, P=newK, criteria=criteria)
 pts_right_undistorted = cv2.undistortPointsIter(matched_kps_right, cameraMatrix, distCoeffs,
@@ -125,7 +124,6 @@ F, mask = cv2.findFundamentalMat(pts_left_undistorted, pts_right_undistorted,
 
 # Compute the essential matrix
 E = np.matmul(np.transpose(cameraMatrix), np.matmul(F, cameraMatrix))
-np.savez('FMat.npx', F=F, E=E)
 
 # Recover inliers
 inl_pts_left = matched_kps_left[mask.ravel() == 1]
@@ -139,10 +137,12 @@ newPts_right = newPts_right.reshape(-1, 1, 2)
 
 # Decompose essential matrix into translational and rotational vectors
 ret, rot, trans, mask, wPts = cv2.recoverPose(E, newPts_left, newPts_right, newK, distanceThresh=1000)
+np.savez('./data/FMat.npz', F=F, E=E, rvec=rot, tvec=trans)
 
 # Compute homography matrix
 ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left, newPts_right, F, (C, R), threshold=1)
 
+# Rectify images
 img_left_rect = cv2.warpPerspective(img_left_undistorted, HL, (C, R))
 img_right_rect = cv2.warpPerspective(img_right_undistorted, HR, (C, R))
 
@@ -153,9 +153,28 @@ img_right_rect = cv2.warpPerspective(img_right_undistorted, HR, (C, R))
 # if cv2.waitKey(0) & 0xff == 27:
 #     cv2.destroyAllWindows()
 
+# Compute disparity
+stereoMatcher = cv2.StereoBM_create()
+stereoMatcher.setMinDisparity(16)
+stereoMatcher.setBlockSize(15)
+gray_left_rect = cv2.cvtColor(img_left_rect, cv2.COLOR_BGR2GRAY)
+gray_right_rect = cv2.cvtColor(img_right_rect, cv2.COLOR_BGR2GRAY)
+
+
+disparity = stereoMatcher.compute(gray_left_rect, gray_right_rect)
+ret, thresh = cv2.threshold(disparity, 250, 10000000, cv2.THRESH_BINARY)
+
+# disparity = stereoMatcher.compute(img_left_rect, img_right_rect)
+# disparity = stereoMatcher.compute(thresh_left, thresh_right)
+
+
+cv2.imshow('Rectified Right Image', thresh)
+if cv2.waitKey(0) & 0xff == 27:
+    cv2.destroyAllWindows()
+
 # Draw epilines on rectified image
-lines1 = cv2.computeCorrespondEpilines(newPts_right.reshape(-1,1,2), 2,F)
-lines1 = lines1.reshape(-1,3)
+# lines1 = cv2.computeCorrespondEpilines(newPts_right.reshape(-1,1,2), 2,F)
+# lines1 = lines1.reshape(-1,3)
 # img5,img6 = drawlines(img_left,img_right,lines1,newPts_left,newPts_right)
 # # Find epilines corresponding to points in left image (first image) and
 # # drawing its lines on right image
