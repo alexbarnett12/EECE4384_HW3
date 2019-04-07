@@ -1,8 +1,14 @@
 import numpy as np
 import cv2
+# import scipy.linalg import null_space
 
-filename1 = 'Stonehenge1.png'
-filename2 = 'Stonehenge2.png'
+# filename1 = 'Stonehenge1.png'
+# filename2 = 'Stonehenge2.png'
+# filename1 = './calibPictures/opencv_frame_0.png'
+# filename2 = './calibPictures/opencv_frame_1.png'
+
+filename1 = 'classroom1.png'
+filename2 = 'classroom2.png'
 
 def orb_detector(img):
 
@@ -43,19 +49,20 @@ def feature_matching(norm, img1, img2, kp1, kp2, des1, des2, numMatches, display
 
     return matches
 
-def drawlines(img1,img2,lines,pts1,pts2):
+
+def drawlines(img1, img2, lines, pts1, pts2):
     ''' img1 - image on which we draw the epilines for the points in img2
         lines - corresponding epilines '''
-    r,c = img1.shape
-    img1 = cv2.cvtColor(img1,cv2.COLOR_GRAY2BGR)
-    img2 = cv2.cvtColor(img2,cv2.COLOR_GRAY2BGR)
-    for r,pt1,pt2 in zip(lines,pts1,pts2):
-        color = tuple(np.random.randint(0,255,3).tolist())
-        x0,y0 = map(int, [0, -r[2]/r[1] ])
-        x1,y1 = map(int, [c, -(r[2]+r[0]*c)/r[1] ])
+    r, c, B = img1.shape
+    # img1 = cv2.cvtColor(img1,cv2.COLOR_GRAY2BGR)
+    # img2 = cv2.cvtColor(img2,cv2.COLOR_GRAY2BGR)
+    for r, pt1, pt2 in zip(lines, pts1, pts2):
+        color = tuple(np.random.randint(0, 255, 3).tolist())
+        x0, y0 = map(int, [0, -r[2]/r[1]])
+        x1, y1 = map(int, [c, -(r[2]+r[0]*c)/r[1] ])
         img1 = cv2.line(img1, (x0,y0), (x1,y1), color,1)
-        img1 = cv2.circle(img1,tuple(pt1),5,color,-1)
-        img2 = cv2.circle(img2,tuple(pt2),5,color,-1)
+        # img1 = cv2.circle(img1,tuple(pt1),5,color,-1)
+        # img2 = cv2.circle(img2,tuple(pt2),5,color,-1)
     return img1,img2
 
 # Find good conjugate pixel pairs from feature matching on a stereo pair of images
@@ -135,9 +142,62 @@ newPts_left, newPts_right = cv2.correctMatches(F, np.reshape(inl_pts_left, (1, n
 newPts_left = newPts_left.reshape(-1, 1, 2)
 newPts_right = newPts_right.reshape(-1, 1, 2)
 
+# Draw epilines on rectified image
+lines1 = cv2.computeCorrespondEpilines(newPts_right.reshape(-1, 1, 2), 2, F)
+lines1 = lines1.reshape(-1, 3)
+img5, img6 = drawlines(img_left, img_right, lines1, newPts_left, newPts_right)
+# Find epilines corresponding to points in left image (first image) and
+# drawing its lines on right image
+lines2 = cv2.computeCorrespondEpilines(newPts_left.reshape(-1, 1, 2), 1, F)
+lines2 = lines2.reshape(-1, 3)
+img3, img4 = drawlines(img_left, img_right, lines2, newPts_left, newPts_right)
+# cv2.imshow('Left Image w/ epilines', img5)
+# cv2.imshow('Right Image w/ epilines', img3)
+# if cv2.waitKey(0) & 0xff == 27:
+#     cv2.destroyAllWindows()
+
 # Decompose essential matrix into translational and rotational vectors
 ret, rot, trans, mask, wPts = cv2.recoverPose(E, newPts_left, newPts_right, newK, distanceThresh=1000)
 np.savez('./data/FMat.npz', F=F, E=E, rvec=rot, tvec=trans)
+
+# Homogenize worldpoint estimates
+wPts = cv2.convertPointsFromHomogeneous(np.transpose(wPts))
+
+# Calculate left and right projection matrices
+PL = np.append(newK, np.zeros((3, 1), dtype=float), axis=1)
+PR = np.append(newK, np.append(rot, trans, axis=1))
+invRot = np.transpose(rot)
+invTrans = -np.matmul(invRot, trans)
+
+# Alternate projection matrix; not needed for assignment
+# eR = linalg.null_space(np.transpose(F))
+# eRmat = np.skew(eR)
+# PR_alt = np.matmul(newK, np.append((np.matmul(eRmat, F) + np.matmul(eR, np.transpose(eR))), eR, axis=1))
+
+# Compute rotation vector from matrix
+rotVec = cv2.Rodrigues(rot)
+
+# Project triangulated world points onto the left image plane
+proj_left = cv2.projectPoints(wPts, (0, 0, 0), (0, 0, 0), newK, distCoeffs)
+# Project triangulated world points onto the right image plane
+proj_right = cv2.projectPoints(wPts, rotVec[0], trans, newK, distCoeffs)
+np.savez('./data/ptbased', rotVec=rotVec, trans=trans)
+
+# Compute reprojection error
+# Compare reprojected points to undistorted original points
+# by computing average Euclidian norm of the difference
+
+# Distance between points in all axes
+dLx = np.squeeze(proj_left[0][:, 0, 0] - newPts_left[:, 0, 0])
+dRx = np.squeeze(proj_right[0][:, 0, 0] - newPts_right[:, 0, 0])
+dLy = np.squeeze(proj_left[0][:, 0, 1] - newPts_left[:, 0, 1])
+dRy = np.squeeze(proj_right[0][:, 0, 1] - newPts_right[:, 0, 1])
+
+# Error
+pt_error_left_x = np.sum(np.abs(dLx))/nPts
+pt_error_right_x = np.sum(np.abs(dRx))/nPts
+pt_error_left_y = np.sum(np.abs(dLy))/nPts
+pt_error_right_y= np.sum(np.abs(dRy))/nPts
 
 # Compute homography matrix
 ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left, newPts_right, F, (C, R), threshold=1)
@@ -146,45 +206,29 @@ ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left, newPts_right, F, (C, R)
 img_left_rect = cv2.warpPerspective(img_left_undistorted, HL, (C, R))
 img_right_rect = cv2.warpPerspective(img_right_undistorted, HR, (C, R))
 
-
 # Display rectified images
 # cv2.imshow('Rectified Left Image', img_left_rect)
 # cv2.imshow('Rectified Right Image', img_right_rect)
 # if cv2.waitKey(0) & 0xff == 27:
 #     cv2.destroyAllWindows()
+cv2.imwrite('./images/rect_left.png', img_left_rect)
+cv2.imwrite('./images/rect_right.png', img_right_rect)
 
-# Compute disparity
-stereoMatcher = cv2.StereoBM_create()
-stereoMatcher.setMinDisparity(16)
-stereoMatcher.setBlockSize(15)
+
 gray_left_rect = cv2.cvtColor(img_left_rect, cv2.COLOR_BGR2GRAY)
 gray_right_rect = cv2.cvtColor(img_right_rect, cv2.COLOR_BGR2GRAY)
 
-
+stereoMatcher = cv2.StereoBM_create(256, 25)
 disparity = stereoMatcher.compute(gray_left_rect, gray_right_rect)
-ret, thresh = cv2.threshold(disparity, 250, 10000000, cv2.THRESH_BINARY)
+disparity = cv2.normalize(src=disparity, dst=disparity, beta=-16, alpha=255, norm_type=cv2.NORM_MINMAX)
+# disp_color = cv2.applyColorMap(np.uint8(disparity), 2)
 
 # disparity = stereoMatcher.compute(img_left_rect, img_right_rect)
 # disparity = stereoMatcher.compute(thresh_left, thresh_right)
 
-
-cv2.imshow('Rectified Right Image', thresh)
+cv2.imshow('Rectified Right Image', disparity)
 if cv2.waitKey(0) & 0xff == 27:
     cv2.destroyAllWindows()
-
-# Draw epilines on rectified image
-# lines1 = cv2.computeCorrespondEpilines(newPts_right.reshape(-1,1,2), 2,F)
-# lines1 = lines1.reshape(-1,3)
-# img5,img6 = drawlines(img_left,img_right,lines1,newPts_left,newPts_right)
-# # Find epilines corresponding to points in left image (first image) and
-# # drawing its lines on right image
-# lines2 = cv2.computeCorrespondEpilines(newPts_left.reshape(-1,1,2), 1,F)
-# lines2 = lines2.reshape(-1,3)
-# img3,img4 = drawlines(img_left_rect,img_right_rect,lines2,newPts_left,newPts_right)
-# cv2.imshow('Rectified Left Image w/ epilines', img5)
-# cv2.imshow('Rectified Right Image w/ epilines', img6)
-# if cv2.waitKey(0) & 0xff == 27:
-#     cv2.destroyAllWindows()
 
 # Class Notes 4/1
 ''' Use cv.undistort to undistort image DONE
