@@ -146,15 +146,16 @@ newPts_right = newPts_right.reshape(-1, 1, 2)
 lines1 = cv2.computeCorrespondEpilines(newPts_right.reshape(-1, 1, 2), 2, F)
 lines1 = lines1.reshape(-1, 3)
 img5, img6 = drawlines(img_left, img_right, lines1, newPts_left, newPts_right)
+
 # Find epilines corresponding to points in left image (first image) and
 # drawing its lines on right image
 lines2 = cv2.computeCorrespondEpilines(newPts_left.reshape(-1, 1, 2), 1, F)
 lines2 = lines2.reshape(-1, 3)
 img3, img4 = drawlines(img_left, img_right, lines2, newPts_left, newPts_right)
-# cv2.imshow('Left Image w/ epilines', img5)
-# cv2.imshow('Right Image w/ epilines', img3)
-# if cv2.waitKey(0) & 0xff == 27:
-#     cv2.destroyAllWindows()
+cv2.imshow('Left Image w/ epilines', img5)
+cv2.imshow('Right Image w/ epilines', img3)
+if cv2.waitKey(0) & 0xff == 27:
+    cv2.destroyAllWindows()
 
 # Decompose essential matrix into translational and rotational vectors
 ret, rot, trans, mask, wPts = cv2.recoverPose(E, newPts_left, newPts_right, newK, distanceThresh=1000)
@@ -174,7 +175,7 @@ invTrans = -np.matmul(invRot, trans)
 # eRmat = np.skew(eR)
 # PR_alt = np.matmul(newK, np.append((np.matmul(eRmat, F) + np.matmul(eR, np.transpose(eR))), eR, axis=1))
 
-# Compute rotation vector from matrix
+# Compute rotation vector from rotation matrix
 rotVec = cv2.Rodrigues(rot)
 
 # Project triangulated world points onto the left image plane
@@ -201,6 +202,10 @@ pt_error_right_y= np.sum(np.abs(dRy))/nPts
 
 # Compute homography matrix
 ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left, newPts_right, F, (C, R), threshold=1)
+# HL /= HL[2,2]
+# HR /= HR[2,2]
+# HL[0,2]-= 150
+# HR[0,2] -= 150
 
 # Rectify images
 img_left_rect = cv2.warpPerspective(img_left_undistorted, HL, (C, R))
@@ -213,7 +218,6 @@ img_right_rect = cv2.warpPerspective(img_right_undistorted, HR, (C, R))
 #     cv2.destroyAllWindows()
 cv2.imwrite('./images/rect_left.png', img_left_rect)
 cv2.imwrite('./images/rect_right.png', img_right_rect)
-
 
 gray_left_rect = cv2.cvtColor(img_left_rect, cv2.COLOR_BGR2GRAY)
 gray_right_rect = cv2.cvtColor(img_right_rect, cv2.COLOR_BGR2GRAY)
@@ -229,80 +233,3 @@ disparity = cv2.normalize(src=disparity, dst=disparity, beta=-16, alpha=255, nor
 cv2.imshow('Rectified Right Image', disparity)
 if cv2.waitKey(0) & 0xff == 27:
     cv2.destroyAllWindows()
-
-# Class Notes 4/1
-''' Use cv.undistort to undistort image DONE
-    Use cv.undistortPointsIter(kp, newK, dist, R=None,  to undistort keypoints (input keypoints and camera matrix stuff)
-    Do this since you need to pass undistroted points into fundamental matrix method DONE
-    then use cv.findFundamentalMatrix
-        RANSAC as a procedure: use a very high confidence level (~.99) and low re=projection threshold (~0.5) DONE 
-    Comes back with F, mask. mask are the inlier points, so you want to save those as separate variables DONE
-    Then compute the essential matrix by premultiplying by camera matrix on both sides (look at slides) DONE
-    Decompose essential matrix into translational and rotational vectors DONE
-    Make a unit vector out of the translation vector if it isn't already (divide by L2 norm) DONE 
-    
-    
-    ///
-    Then multiply it by a number which is roughly the same as the distance between the two pictures taken 
-    Use triangulation on inlier points to make 3d points (opencv func?)
-    Then take 3d vectors and "run them through" left and right camera matrices
-    Then compute left and right homography matrices (opencv funcs)
-        ret, HL, HR = cv.stereoRectifyUncalibrated
-    HL /= HL[2,2] DONT NEED THESE FOUR LINES
-    HR /= HR[2,2]
-    HL[0,2]-=150 # subtract # of pixels from third column to shift things over 
-    HR[0,2]-=150
-    save these images
-
-    rect_img_left = cv.warpPerspective(undist_img_left, HL, (C, R))
-
-    At this point, you should be able to go straight across images when viewing and have them both be aligned
-
-    Now do stereo matching
-    Block Matcher or Peter's program
-    http://timosam.com/python_opencv_depthimage
-        will need opencv_+contrib thingy
-        cv.ximgproc will execute even though it will say it doesn't know what it is
-
-    '''
-
-# # FROM CLASS
-#
-# newK, roi = cv2.getOptimalNewCameraMatrix(K, dist, {C, R}, 0, {C, R})
-#
-# # project points through inverse camera matrix and undistort them
-# cv2.undistortPointsIter(matched_kps_left, newK, dist,)
-#
-# F, mask = cv2.findFundamentalMat(undist_pts_left, undist_pts_right, cv2.FM_RANSAC, ransacReprojThreshold=0.5, confidence=)
-# np.savez('FMat.npz',F=F)
-#
-# in1_pts_left = matched_kps_left(mask.ravel()==1)
-# in1_pts_right = matched_kps_right(mask.ravel()==1)
-#
-# newPts_left, newPts_right = cv2.correctMatches(F, np.reshape(in1_pts_left, (1, nPts))
-#
-# # Find epilines corresponding to points in right image and drawing its lines on the second image
-# eLines_left = cv2.computeCorrespondEpilines(newPts_right, 2, F))
-# eLines_left = eLines_left.reshape()
-#
-# ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left[:, :, 0:2], newPts_right[:, :, 0:2})
-# HL /= HL[2,2]
-# HR /= HR[2,2]
-# HL[0,2]-= 150
-# HR[0,2] -= 150
-#
-# rect_img_left = cv2.warpPerspective(undist_img_left, HL, (C, R))
-# rect_img_right = cv2.warpPerspective(undist_img_right, HR, (C, R))
-#
-# #Convert to grayscale
-#
-# #Now use StereoBM
-# stereoMatcher = cv2.StereoBM_create()
-# stereoMatcher.setMinDisparity(16)
-# stereoMatcher.setBlockSize(9)
-# disparity = stereoMatcher.compute(gray_left, gray_right)
-# disparity_norm = cv2.normalize(disparity, None, 255, 0,cv2.NORM_MINMAX, cv2.CV_8UC1)
-# plt.imshow(disparity,'gray')
-# plt.show()
-
-

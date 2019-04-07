@@ -1,0 +1,70 @@
+''' Use cv.undistort to undistort image DONE
+    Use cv.undistortPointsIter(kp, newK, dist, R=None,  to undistort keypoints (input keypoints and camera matrix stuff)
+    Do this since you need to pass undistroted points into fundamental matrix method DONE
+    then use cv.findFundamentalMatrix
+        RANSAC as a procedure: use a very high confidence level (~.99) and low re=projection threshold (~0.5) DONE
+    Comes back with F, mask. mask are the inlier points, so you want to save those as separate variables DONE
+    Then compute the essential matrix by premultiplying by camera matrix on both sides (look at slides) DONE
+    Decompose essential matrix into translational and rotational vectors DONE
+    Make a unit vector out of the translation vector if it isn't already (divide by L2 norm) DONE
+
+
+    ///
+    Then multiply it by a number which is roughly the same as the distance between the two pictures taken
+    Use triangulation on inlier points to make 3d points (opencv func?)
+    Then take 3d vectors and "run them through" left and right camera matrices
+    Then compute left and right homography matrices (opencv funcs)
+        ret, HL, HR = cv.stereoRectifyUncalibrated
+    HL /= HL[2,2] DONT NEED THESE FOUR LINES
+    HR /= HR[2,2]
+    HL[0,2]-=150 # subtract # of pixels from third column to shift things over
+    HR[0,2]-=150
+    save these images
+
+    rect_img_left = cv.warpPerspective(undist_img_left, HL, (C, R))
+
+    At this point, you should be able to go straight across images when viewing and have them both be aligned
+
+    Now do stereo matching
+    Block Matcher or Peter's program
+    http://timosam.com/python_opencv_depthimage
+        will need opencv_+contrib thingy
+        cv.ximgproc will execute even though it will say it doesn't know what it is
+
+    '''
+
+# # FROM CLASS
+#
+# newK, roi = cv2.getOptimalNewCameraMatrix(K, dist, {C, R}, 0, {C, R})
+#
+# # project points through inverse camera matrix and undistort them
+# cv2.undistortPointsIter(matched_kps_left, newK, dist,)
+#
+# F, mask = cv2.findFundamentalMat(undist_pts_left, undist_pts_right, cv2.FM_RANSAC, ransacReprojThreshold=0.5, confidence=)
+# np.savez('FMat.npz',F=F)
+#
+# in1_pts_left = matched_kps_left(mask.ravel()==1)
+# in1_pts_right = matched_kps_right(mask.ravel()==1)
+#
+# newPts_left, newPts_right = cv2.correctMatches(F, np.reshape(in1_pts_left, (1, nPts))
+#
+# # Find epilines corresponding to points in right image and drawing its lines on the second image
+# eLines_left = cv2.computeCorrespondEpilines(newPts_right, 2, F))
+# eLines_left = eLines_left.reshape()
+#
+# ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left[:, :, 0:2], newPts_right[:, :, 0:2})
+#
+#
+# rect_img_left = cv2.warpPerspective(undist_img_left, HL, (C, R))
+# rect_img_right = cv2.warpPerspective(undist_img_right, HR, (C, R))
+#
+# #Convert to grayscale
+#
+# #Now use StereoBM
+# stereoMatcher = cv2.StereoBM_create()
+# stereoMatcher.setMinDisparity(16)
+# stereoMatcher.setBlockSize(9)
+# disparity = stereoMatcher.compute(gray_left, gray_right)
+# disparity_norm = cv2.normalize(disparity, None, 255, 0,cv2.NORM_MINMAX, cv2.CV_8UC1)
+# plt.imshow(disparity,'gray')
+# plt.show()

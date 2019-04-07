@@ -2,11 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0e5638f4-629d-4bdf-b383-103aa5ab4111" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/TimosamDepthImage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Notes" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EpipolarStereopsis.py" beforeDir="false" afterPath="$PROJECT_DIR$/EpipolarStereopsis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/StereopsisBM.py" beforeDir="false" afterPath="$PROJECT_DIR$/StereopsisBM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/singlePointStereopsis.py" beforeDir="false" afterPath="$PROJECT_DIR$/singlePointStereopsis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/FMat.npz" beforeDir="false" afterPath="$PROJECT_DIR$/data/FMat.npz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/ptbased.npz" beforeDir="false" afterPath="$PROJECT_DIR$/data/ptbased.npz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/images/rect_right.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/rect_right.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/skyline2.jpg" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,22 +19,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/cameraCalibration.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret selection-end-line="2" selection-end-column="11" />
-              <folding>
-                <element signature="e#0#18#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/EpipolarStereopsis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1305">
-              <caret line="88" column="40" selection-start-line="88" selection-start-column="40" selection-end-line="88" selection-end-column="40" />
+            <state relative-caret-position="517">
+              <caret line="235" selection-start-line="235" selection-end-line="235" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -41,10 +31,35 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Notes">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/images/rect_left.png">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/skyline1.jpg">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/classroom1.png">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/classroom2.png">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/singlePointStereopsis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="517">
-              <caret line="85" lean-forward="true" selection-start-line="85" selection-end-line="85" />
+            <state relative-caret-position="630">
+              <caret line="42" column="19" selection-start-line="42" selection-start-column="19" selection-end-line="42" selection-end-column="19" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -107,8 +122,8 @@
         <option value="$PROJECT_DIR$/cameraCalibration.py" />
         <option value="$PROJECT_DIR$/TimosamDepthImage.py" />
         <option value="$PROJECT_DIR$/StereopsisBM.py" />
-        <option value="$PROJECT_DIR$/EpipolarStereopsis.py" />
         <option value="$PROJECT_DIR$/singlePointStereopsis.py" />
+        <option value="$PROJECT_DIR$/EpipolarStereopsis.py" />
       </list>
     </option>
   </component>
@@ -139,6 +154,11 @@
               <item name="HW3" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="HW3" type="b2602c69:ProjectViewProjectNode" />
+              <item name="HW3" type="462c0819:PsiDirectoryNode" />
+              <item name="images" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -162,7 +182,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.singlePointStereopsis">
+  <component name="RunManager" selected="Python.EpipolarStereopsis">
     <configuration name="EpipolarStereopsis" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="HW3" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -270,8 +290,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.singlePointStereopsis" />
         <item itemvalue="Python.EpipolarStereopsis" />
+        <item itemvalue="Python.singlePointStereopsis" />
         <item itemvalue="Python.StereopsisBM" />
         <item itemvalue="Python.TimosamDepthImage" />
         <item itemvalue="Python.cameraCalibration" />
@@ -326,11 +346,6 @@
           <url>file://$PROJECT_DIR$/EpipolarStereopsis.py</url>
           <line>63</line>
           <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/singlePointStereopsis.py</url>
-          <line>12</line>
-          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -392,16 +407,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/EpipolarStereopsis.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1305">
-          <caret line="88" column="40" selection-start-line="88" selection-start-column="40" selection-end-line="88" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/StereopsisBM.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="120">
@@ -424,13 +429,41 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/singlePointStereopsis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="517">
-          <caret line="85" lean-forward="true" selection-start-line="85" selection-end-line="85" />
+        <state relative-caret-position="630">
+          <caret line="42" column="19" selection-start-line="42" selection-start-column="19" selection-end-line="42" selection-end-column="19" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/skyline2.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/skyline1.jpg">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/classroom1.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/classroom2.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/images/rect_left.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/EpipolarStereopsis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="517">
+          <caret line="235" selection-start-line="235" selection-end-line="235" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Notes">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>
