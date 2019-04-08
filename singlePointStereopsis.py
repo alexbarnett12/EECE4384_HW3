@@ -15,40 +15,42 @@ def hs_stereo(pt_c_l, rvec_l, tvec_l, pt_c_r, rvec_r, tvec_r):
     # Construct a covariance matrix between pwl and pwr
 
     # Magnitude squared of world points
-    pl2 = np.matmul(np.transpose(pwl), pwl)
-    pr2 = np.matmul(np.transpose(pwr), pwr)
+    pl2 = np.asscalar(np.matmul(np.transpose(pwl), pwl))
+    pr2 = np.asscalar(np.matmul(np.transpose(pwr), pwr))
 
     # Covariance of right point with left
-    plr = np.matmul(np.transpose(pwl), pwr)
+    plr = np.asscalar(np.matmul(np.transpose(pwl), pwr))
 
     # Covariance of left point with right
-    prl = np.matmul(np.transpose(pwr), pwl)
+    prl = np.asscalar(np.matmul(np.transpose(pwr), pwl))
 
     C = np.array([[pl2, prl], [plr, pr2]])
 
     # Calculate the determinant
-    k = 1 / (np.matmul(pl2,pr2) - np.matmul(plr,prl))
+    k = 1 / (pl2 * pr2 - plr * prl)
 
     # Matrix inverse
     Cadj = np.array([[pr2, -prl], [-plr, pl2]])
     Cinv = k * Cadj
 
     # Sign change of second row
-    Cinv = Cinv * np.array([[1, 0], [0, -1]])
+    Cinv = np.matmul(Cinv, np.array([[1, 0], [0, -1]]))
 
     # Compute the baseline
     base = tvec_r - tvec_l
 
     # Project each point onto the baseline
-    b1 = np.matmul(np.transpose(base), pwl)
-    b2 = np.matmul(np.transpose(base), pwr)
+    b1 = np.asscalar(np.matmul(np.transpose(base), pwl))
+    b2 = np.asscalar(np.matmul(np.transpose(base), pwr))
 
     # Transform the baseline projections into the pwl-pwr cdt sys
-    lamb = Cinv * np.array([b1, b2])
+    baselines = np.array([[b1], [b2]])
+    lamb = np.matmul(Cinv, baselines)
 
     # Re-express each in terms of world coordinates
-    pwlest = np.matmul(pwl, lamb[0]) + tvec_l
-    pwrest = np.matmul(pwr, lamb[1]) + tvec_r
+    # rvec_r = np.reshape(rvec[1][0], (3,1))
+    pwlest = np.asscalar(lamb[0])* pwl + tvec_l
+    pwrest = np.asscalar(lamb[1]) * pwr + tvec_r
 
     # Take their average
     pw = (pwlest + pwrest) / 2
@@ -56,9 +58,9 @@ def hs_stereo(pt_c_l, rvec_l, tvec_l, pt_c_r, rvec_r, tvec_r):
     return pw
 
 # Load camera parameters
-calib = np.load('./data/ptbased.npz')
+calib = np.load('./data/FMat.npz')
 parameters = calib._files
-rvec, tvec = [calib[parameters[0]], calib[parameters[1]]]
+rvec, tvec = [calib[parameters[2]], calib[parameters[0]]]
 
 # Import essential matrix and camera intrinsic parameters
 # calib = np.load('./data/calib.npz')
@@ -73,13 +75,19 @@ rvec, tvec = [calib[parameters[0]], calib[parameters[1]]]
 # F, E, rvec, tvec = [calib[parameters[0]], calib[parameters[1]],calib[parameters[2]], calib[parameters[3]]]
 
 # Visually select four point pairs that are on objects at different distances
-pl = np.array([[199, 171]])
-pr = np.array([[223, 171]])
+# pl = np.array([[199], [171], [1]])
+# pr = np.array([[223], [171], [1]])
+
+pl = np.array([[161], [493], [1]])
+pr = np.array([[171], [492], [1]])
+
 
 # Run HSstereo algorithm
-rvec_l = np.array([[0], [0], [0]])
+rvec_l = np.identity(3)
 tvec_l = np.array([[0], [0], [0]])
-rvec_r = np.reshape(rvec[1][0], (3,1))
+# rvec_l = np.array([[0], [0], [1]])
+# tvec_l = np.array([[0], [0], [1]])
+# rvec_r = np.reshape(rvec[1][0], (3,1))
 
-pw = hs_stereo(pl, rvec_l, tvec_l, pr, rvec_r, tvec)
+pw = hs_stereo(pl, rvec_l, tvec_l, pr, rvec, tvec)
 print(pw)

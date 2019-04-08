@@ -1,14 +1,14 @@
 import numpy as np
 import cv2
+from matplotlib import pyplot as plt
 # import scipy.linalg import null_space
 
 # filename1 = 'Stonehenge1.png'
 # filename2 = 'Stonehenge2.png'
 # filename1 = './calibPictures/opencv_frame_0.png'
 # filename2 = './calibPictures/opencv_frame_1.png'
-
-filename1 = 'classroom1.png'
-filename2 = 'classroom2.png'
+filename1 = './images/stereo_0.png'
+filename2 = './images/stereo_1.png'
 
 def orb_detector(img):
 
@@ -39,13 +39,13 @@ def feature_matching(norm, img1, img2, kp1, kp2, des1, des2, numMatches, display
     matches = sorted(matches, key=lambda x: x.distance)
 
     # Draw matches
-    # img3 = np.array([])
-    # img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches[:numMatches], img3, flags=2)
-    #
-    # cv2.imshow(display, img3)
-    # if cv2.waitKey(0) & 0xff == 27:
-    #     cv2.destroyAllWindows()
-    # cv2.imwrite('./images/feature_match/' + fileout, img3)
+    img3 = np.array([])
+    img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches[:numMatches], img3, flags=2)
+
+    cv2.imshow(display, img3)
+    if cv2.waitKey(0) & 0xff == 27:
+        cv2.destroyAllWindows()
+    cv2.imwrite('./results/feature_match.png', img3)
 
     return matches
 
@@ -76,10 +76,10 @@ kp_left, des_left, img_left_orb = orb_detector(img_left)
 kp_right, des_right, img_right_orb = orb_detector(img_right)
 
 # Visualize ORB detector
-# cv2.imshow('ORB Corner Detector 1', img1_orb)
-# cv2.imshow('ORB Corner Detector 2', img2_orb)
-# if cv2.waitKey(0) & 0xff == 27:
-#     cv2.destroyAllWindows()
+cv2.imshow('ORB Corner Detector 1', img_left_orb)
+cv2.imshow('ORB Corner Detector 2', img_right_orb)
+if cv2.waitKey(0) & 0xff == 27:
+    cv2.destroyAllWindows()
 #
 # Write images to files
 # cv2.imwrite('./results/orb/orb1.png', img1_orb)
@@ -101,12 +101,16 @@ img_left_undistorted = cv2.undistort(img_left, cameraMatrix, distCoeffs)
 img_right_undistorted = cv2.undistort(img_right, cameraMatrix, distCoeffs)
 
 # Display undistorted images
-# cv2.imshow('Undistorted Image Left', img_left_undistorted)
-# cv2.imshow('Undistorted Image Right', img_right_undistorted)
-# if cv2.waitKey(0) & 0xff == 27:
-#     cv2.destroyAllWindows()
+cv2.imshow('Undistorted Image Left', img_left_undistorted)
+cv2.imshow('Undistorted Image Right', img_right_undistorted)
+if cv2.waitKey(0) & 0xff == 27:
+    cv2.destroyAllWindows()
+cv2.imwrite('./results/undistortleft.png', img_left_undistorted)
+cv2.imwrite('./results/undistortright.png', img_right_undistorted)
 
 newK, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, (C, R), 0, (C, R))
+print(cameraMatrix)
+print(newK)
 
 # N x 1 x 2
 matched_kps_left = [kp_left[mat.queryIdx].pt for mat in matches]
@@ -142,20 +146,21 @@ newPts_left, newPts_right = cv2.correctMatches(F, np.reshape(inl_pts_left, (1, n
 newPts_left = newPts_left.reshape(-1, 1, 2)
 newPts_right = newPts_right.reshape(-1, 1, 2)
 
-# Draw epilines on rectified image
+# Draw epilines
 lines1 = cv2.computeCorrespondEpilines(newPts_right.reshape(-1, 1, 2), 2, F)
 lines1 = lines1.reshape(-1, 3)
 img5, img6 = drawlines(img_left, img_right, lines1, newPts_left, newPts_right)
-
-# Find epilines corresponding to points in left image (first image) and
-# drawing its lines on right image
 lines2 = cv2.computeCorrespondEpilines(newPts_left.reshape(-1, 1, 2), 1, F)
 lines2 = lines2.reshape(-1, 3)
 img3, img4 = drawlines(img_left, img_right, lines2, newPts_left, newPts_right)
+
+# Display and write epilines
 cv2.imshow('Left Image w/ epilines', img5)
 cv2.imshow('Right Image w/ epilines', img3)
 if cv2.waitKey(0) & 0xff == 27:
     cv2.destroyAllWindows()
+cv2.imwrite('./results/epilinesl.png', img5)
+cv2.imwrite('./results/epilines2.png', img3)
 
 # Decompose essential matrix into translational and rotational vectors
 ret, rot, trans, mask, wPts = cv2.recoverPose(E, newPts_left, newPts_right, newK, distanceThresh=1000)
@@ -169,11 +174,6 @@ PL = np.append(newK, np.zeros((3, 1), dtype=float), axis=1)
 PR = np.append(newK, np.append(rot, trans, axis=1))
 invRot = np.transpose(rot)
 invTrans = -np.matmul(invRot, trans)
-
-# Alternate projection matrix; not needed for assignment
-# eR = linalg.null_space(np.transpose(F))
-# eRmat = np.skew(eR)
-# PR_alt = np.matmul(newK, np.append((np.matmul(eRmat, F) + np.matmul(eR, np.transpose(eR))), eR, axis=1))
 
 # Compute rotation vector from rotation matrix
 rotVec = cv2.Rodrigues(rot)
@@ -199,25 +199,24 @@ pt_error_left_x = np.sum(np.abs(dLx))/nPts
 pt_error_right_x = np.sum(np.abs(dRx))/nPts
 pt_error_left_y = np.sum(np.abs(dLy))/nPts
 pt_error_right_y= np.sum(np.abs(dRy))/nPts
+print([pt_error_left_x, pt_error_left_y, pt_error_right_x, pt_error_right_y])
 
 # Compute homography matrix
 ret, HL, HR = cv2.stereoRectifyUncalibrated(newPts_left, newPts_right, F, (C, R), threshold=1)
-# HL /= HL[2,2]
-# HR /= HR[2,2]
-# HL[0,2]-= 150
-# HR[0,2] -= 150
+print(HL)
+print(HR)
 
 # Rectify images
 img_left_rect = cv2.warpPerspective(img_left_undistorted, HL, (C, R))
 img_right_rect = cv2.warpPerspective(img_right_undistorted, HR, (C, R))
 
 # Display rectified images
-# cv2.imshow('Rectified Left Image', img_left_rect)
-# cv2.imshow('Rectified Right Image', img_right_rect)
-# if cv2.waitKey(0) & 0xff == 27:
-#     cv2.destroyAllWindows()
-cv2.imwrite('./images/rect_left.png', img_left_rect)
-cv2.imwrite('./images/rect_right.png', img_right_rect)
+cv2.imshow('Rectified Left Image', img_left_rect)
+cv2.imshow('Rectified Right Image', img_right_rect)
+if cv2.waitKey(0) & 0xff == 27:
+    cv2.destroyAllWindows()
+cv2.imwrite('./results/rect_left.png', img_left_rect)
+cv2.imwrite('./results/rect_right.png', img_right_rect)
 
 gray_left_rect = cv2.cvtColor(img_left_rect, cv2.COLOR_BGR2GRAY)
 gray_right_rect = cv2.cvtColor(img_right_rect, cv2.COLOR_BGR2GRAY)
@@ -225,11 +224,9 @@ gray_right_rect = cv2.cvtColor(img_right_rect, cv2.COLOR_BGR2GRAY)
 stereoMatcher = cv2.StereoBM_create(256, 25)
 disparity = stereoMatcher.compute(gray_left_rect, gray_right_rect)
 disparity = cv2.normalize(src=disparity, dst=disparity, beta=-16, alpha=255, norm_type=cv2.NORM_MINMAX)
-# disp_color = cv2.applyColorMap(np.uint8(disparity), 2)
+disp_color = cv2.applyColorMap(np.uint8(disparity), 2)
 
-# disparity = stereoMatcher.compute(img_left_rect, img_right_rect)
-# disparity = stereoMatcher.compute(thresh_left, thresh_right)
-
-cv2.imshow('Rectified Right Image', disparity)
+cv2.imshow('Disparity map', disp_color)
 if cv2.waitKey(0) & 0xff == 27:
     cv2.destroyAllWindows()
+cv2.imwrite('./results/disparity.png', disp_color)
