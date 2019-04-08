@@ -78,8 +78,8 @@ rvec, tvec = [calib[parameters[2]], calib[parameters[0]]]
 # pl = np.array([[199], [171], [1]])
 # pr = np.array([[223], [171], [1]])
 
-pl = np.array([[161], [493], [1]])
-pr = np.array([[171], [492], [1]])
+pl = np.array([[279], [428], [1]])
+pr = np.array([[312], [430], [1]])
 
 
 # Run HSstereo algorithm
