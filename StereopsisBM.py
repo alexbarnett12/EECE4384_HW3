@@ -1,4 +1,7 @@
-import numpy as np
+# Block Matching Dispartiy Computer
+# Alex Barnett, Spring 2019
+# Code taken and modified from OpenCV block matching tutorial
+
 import cv2
 from matplotlib import pyplot as plt
 

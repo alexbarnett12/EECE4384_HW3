@@ -1,12 +1,10 @@
+# Epipolar Stereopsis
+# Alex Barnett, Spring 2019
+# Code sourced from Dr. Peters
+
 import numpy as np
 import cv2
-from matplotlib import pyplot as plt
-# import scipy.linalg import null_space
 
-# filename1 = 'Stonehenge1.png'
-# filename2 = 'Stonehenge2.png'
-# filename1 = './calibPictures/opencv_frame_0.png'
-# filename2 = './calibPictures/opencv_frame_1.png'
 filename1 = './images/stereo_0.png'
 filename2 = './images/stereo_1.png'
 

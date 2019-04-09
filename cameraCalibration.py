@@ -1,3 +1,7 @@
+# Camera Calibration
+# Alex Barnett, Spring 2019
+# Code taken and modified from OpenCV camera calibration tutorial
+
 import numpy as np
 import cv2
 import glob

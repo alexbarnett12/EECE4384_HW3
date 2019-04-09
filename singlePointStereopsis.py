@@ -1,5 +1,8 @@
+# Single Point Stereopsis
+# Alex Barnett, Spring 2019
+# Code translated from Dr. Peters' Matlab code
+
 import numpy as np
-import cv2
 
 
 # Haralick and Shapiro depth calculator
@@ -62,21 +65,7 @@ calib = np.load('./data/FMat.npz')
 parameters = calib._files
 rvec, tvec = [calib[parameters[2]], calib[parameters[0]]]
 
-# Import essential matrix and camera intrinsic parameters
-# calib = np.load('./data/calib.npz')
-# parameters = calib._files
-# # K, dist, rvec, tvec = [calib[parameters[0]], calib[parameters[1]],
-# #                                         calib[parameters[2]], calib[parameters[3]]]
-# K, dist = [calib[parameters[0]], calib[parameters[1]]]
-
-# Import rvec and tvec extraced from essential matrix
-# projection_parameters = np.load('./data/FMat.npz')
-# parameters = projection_parameters._files
-# F, E, rvec, tvec = [calib[parameters[0]], calib[parameters[1]],calib[parameters[2]], calib[parameters[3]]]
-
 # Visually select four point pairs that are on objects at different distances
-# pl = np.array([[199], [171], [1]])
-# pr = np.array([[223], [171], [1]])
 
 pl = np.array([[279], [428], [1]])
 pr = np.array([[312], [430], [1]])
@@ -85,9 +74,6 @@ pr = np.array([[312], [430], [1]])
 # Run HSstereo algorithm
 rvec_l = np.identity(3)
 tvec_l = np.array([[0], [0], [0]])
-# rvec_l = np.array([[0], [0], [1]])
-# tvec_l = np.array([[0], [0], [1]])
-# rvec_r = np.reshape(rvec[1][0], (3,1))
 
 pw = hs_stereo(pl, rvec_l, tvec_l, pr, rvec, tvec)
 print(pw)
